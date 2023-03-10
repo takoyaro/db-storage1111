@@ -11,13 +11,13 @@ mongo_username = ""
 mongo_password = ""
 
 if os.getenv('DB_HOST') is not None:
-    mongo_host = os.getenv('MONGO_HOST')
+    mongo_host = os.getenv('DB_HOST')
 if os.getenv('DB_PORT') is not None:
-    mongo_port = os.getenv('MONGO_PORT')
+    mongo_port = os.getenv('DB_PORT')
 if os.getenv('DB_USER') is not None:
-    mongo_username = os.getenv('MONGO_USERNAME')
+    mongo_username = os.getenv('DB_USER')
 if os.getenv('DB_PASS') is not None:
-    mongo_password = os.getenv('MONGO_PASSWORD')
+    mongo_password = os.getenv('DB_PASS')
 
 def get_mongo_client(database_name, collection_name):
     from pymongo import MongoClient
