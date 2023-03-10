@@ -74,10 +74,10 @@ class Scripts(scripts.Script):
                 collection.insert_one({
                     "prompt": prompt, 
                     "negative_prompt": neg_prompt, 
-                    "steps": steps, 
-                    "seed": seed, 
+                    "steps": int(steps), 
+                    "seed": int(seed), 
                     "sampler": sampler,
-                    "cfg_scale": cfg_scale, 
+                    "cfg_scale": float(cfg_scale), 
                     "size": size, 
                     "model_hash": model_hash, 
                     "model": model, 
