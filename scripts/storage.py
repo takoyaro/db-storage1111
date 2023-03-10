@@ -5,10 +5,6 @@ import re
 import modules.scripts as scripts
 import gradio as gr
 
-import gradio as gr
-import modules.scripts as scripts
-import sys
-
 mongo_host = "localhost"
 mongo_port = 27017
 mongo_username = ""
