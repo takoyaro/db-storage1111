@@ -4,25 +4,17 @@ import os
 import re
 import modules.scripts as scripts
 import gradio as gr
+from pymongo import MongoClient
 
-mongo_host = "localhost"
-mongo_port = 27017
-mongo_username = ""
-mongo_password = ""
+mongo_host = os.environ.get('DB_HOST', 'localhost')
+mongo_port = int(os.environ.get('DB_PORT', 27017))
+mongo_username = os.environ.get('DB_USER', '')
+mongo_password = os.environ.get('DB_PASS', '')
 
-if os.getenv('DB_HOST') is not None:
-    mongo_host = os.getenv('DB_HOST')
-if os.getenv('DB_PORT') is not None:
-    mongo_port = os.getenv('DB_PORT')
-if os.getenv('DB_USER') is not None:
-    mongo_username = os.getenv('DB_USER')
-if os.getenv('DB_PASS') is not None:
-    mongo_password = os.getenv('DB_PASS')
+client = MongoClient(f"mongodb://{mongo_username}:{mongo_password}@{mongo_host}:{mongo_port}/")
 
-def get_mongo_client(database_name, collection_name):
-    from pymongo import MongoClient
-    dburl = "mongodb://"+mongo_username+":"+mongo_password+"@"+ mongo_host + ":" + str(mongo_port)
-    client = MongoClient(dburl)
+
+def get_collection(database_name, collection_name):
     db = client[database_name]
     collection = db[collection_name]
     return collection
@@ -40,35 +32,33 @@ class Scripts(scripts.Script):
         collection_name = gr.inputs.Textbox(label="Collection Name", default="Automatic1111")
         return [checkbox_save_to_db, database_name, collection_name]
 
-    
-
     def postprocess(self, p, processed,checkbox_save_to_db,database_name,collection_name):
-   
-        proc = processed
-        # Upload to Mongo
-        if checkbox_save_to_db:
-            collection = get_mongo_client(database_name, collection_name)
-        for i in range(len(proc.images)):
+        collection = get_collection(database_name, collection_name) if checkbox_save_to_db else None
+        if collection is None:
+            return True
+        
+        for i in range(len(processed.images)):
 
+            # Extract image information
             regex = r"Steps:.*$"
-            seed = proc.seed
-            prompt = proc.prompt
-            neg_prompt = proc.negative_prompt
-            info = re.findall(regex,proc.info,re.M)[0]
-            image = proc.images[i]
-            buffer = BytesIO()
-            image.save(buffer, "png")
-            img_bytes = buffer.getvalue()
-            img_b64 = base64.b64encode(img_bytes)
-            
+            seed = processed.seed
+            prompt = processed.prompt
+            neg_prompt = processed.negative_prompt
+            info = re.findall(regex, processed.info, re.M)[0]
             input_dict = dict(item.split(": ") for item in str(info).split(", "))
-            steps = input_dict["Steps"]
-            seed = input_dict["Seed"]
+            steps = int(input_dict["Steps"])
+            seed = int(input_dict["Seed"])
             sampler = input_dict["Sampler"]
-            cfg_scale = input_dict["CFG scale"]
+            cfg_scale = float(input_dict["CFG scale"])
             size = tuple(map(int, input_dict["Size"].split("x")))
             model_hash = input_dict["Model hash"]
             model = input_dict["Model"]
+
+            image = processed.images[i]
+            buffer = BytesIO()
+            image.save(buffer, "png")
+            image_bytes = buffer.getvalue()
+            img_b64 = base64.b64encode(image_bytes)
 
             if checkbox_save_to_db:
                 collection.insert_one({
