@@ -11,7 +11,8 @@ mongo_port = int(os.environ.get('DB_PORT', 27017))
 mongo_username = os.environ.get('DB_USER', '')
 mongo_password = os.environ.get('DB_PASS', '')
 
-client = MongoClient(f"mongodb://{mongo_username}:{mongo_password}@{mongo_host}:{mongo_port}/")
+creds = f"{mongo_username}:{mongo_password}@" if mongo_username and mongo_password else ""
+client = MongoClient(f"mongodb://{creds}{mongo_host}:{mongo_port}/")
 
 
 def get_collection(database_name, collection_name):
@@ -58,7 +59,6 @@ class Scripts(scripts.Script):
             buffer = BytesIO()
             image.save(buffer, "png")
             image_bytes = buffer.getvalue()
-            img_b64 = base64.b64encode(image_bytes)
 
             if checkbox_save_to_db:
                 collection.insert_one({
@@ -71,6 +71,6 @@ class Scripts(scripts.Script):
                     "size": size, 
                     "model_hash": model_hash, 
                     "model": model, 
-                    "image": img_b64
+                    "image": image_bytes
                 })
         return True
