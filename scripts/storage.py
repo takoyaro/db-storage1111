@@ -60,17 +60,16 @@ class Scripts(scripts.Script):
             image.save(buffer, "png")
             image_bytes = buffer.getvalue()
 
-            if checkbox_save_to_db:
-                collection.insert_one({
-                    "prompt": prompt, 
-                    "negative_prompt": neg_prompt, 
-                    "steps": int(steps), 
-                    "seed": int(seed), 
-                    "sampler": sampler,
-                    "cfg_scale": float(cfg_scale), 
-                    "size": size, 
-                    "model_hash": model_hash, 
-                    "model": model, 
-                    "image": image_bytes
-                })
+            collection.insert_one({
+                "prompt": prompt, 
+                "negative_prompt": neg_prompt, 
+                "steps": int(steps), 
+                "seed": int(seed), 
+                "sampler": sampler,
+                "cfg_scale": float(cfg_scale), 
+                "size": size, 
+                "model_hash": model_hash, 
+                "model": model, 
+                "image": image_bytes
+            })
         return True
